@@ -1,0 +1,15 @@
+{% extends "blog/base.html" %}
+
+{% block contenido %}
+<h2>Publicaciones</h2>
+
+{% for p in publicaciones %}
+<div class="card">
+    <h3>{{ p.titulo }}</h3>
+    <p>{{ p.contenido }}</p>
+    <p><strong>Autor:</strong> {{ p.autor }}</p>
+    <p><small>{{ p.fecha }}</small></p>
+</div>
+{% endfor %}
+
+{% endblock %}
