@@ -1,19 +1,21 @@
 {% extends "blog/base.html" %}
+{% load widget_tweaks %}
 
 {% block contenido %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <h2 class="fw-bold text-center mb-4"><i class="bi bi-person-plus me-2"></i>Registrarse</h2>
+                <h2 class="fw-bold text-center mb-1">Crear cuenta</h2>
+                <p class="text-muted text-center mb-4">Completá los datos para registrarte</p>
                 <form method="post">
                     {% csrf_token %}
                     {% for campo in formulario %}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo }}
+                        {{ campo|add_class:"form-control" }}
                         {% if campo.errors %}
-                        <div class="text-danger small">{{ campo.errors }}</div>
+                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -22,7 +24,7 @@
                     </div>
                 </form>
                 <hr>
-                <p class="text-center mb-0">¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá sesión</a></p>
+                <p class="text-center mb-0 text-muted">¿Ya tenés cuenta? <a href="{% url 'login' %}">Iniciá sesión</a></p>
             </div>
         </div>
     </div>

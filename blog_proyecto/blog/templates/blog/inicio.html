@@ -1,42 +1,89 @@
 {% extends "blog/base.html" %}
 
 {% block contenido %}
-<div class="p-5 mb-4 bg-dark text-white rounded-3">
-    <div class="container py-3">
-        <h1 class="display-5 fw-bold"><i class="bi bi-journal-text me-2"></i>Blog Tecnológico</h1>
-        <p class="col-md-8 fs-4">Un espacio para compartir ideas, novedades y artículos sobre tecnología.</p>
-        <a href="{% url 'lista' %}" class="btn btn-light btn-lg me-2">Ver publicaciones</a>
-        <a href="{% url 'buscar' %}" class="btn btn-outline-light btn-lg">Buscar</a>
+
+<!-- Hero Section -->
+<div class="rounded-4 p-5 mb-5 text-white position-relative overflow-hidden" 
+     style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); min-height: 400px;">
+    
+    <!-- Fondo decorativo -->
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="
+        background-image: radial-gradient(circle at 20% 50%, rgba(37,99,235,0.3) 0%, transparent 50%),
+                          radial-gradient(circle at 80% 20%, rgba(99,102,241,0.2) 0%, transparent 40%),
+                          radial-gradient(circle at 60% 80%, rgba(14,165,233,0.2) 0%, transparent 40%);
+        pointer-events: none;">
+    </div>
+
+    <div class="position-relative" style="z-index: 1;">
+        <span class="badge mb-3 px-3 py-2" style="background-color: rgba(37,99,235,0.3); color: #93c5fd; font-size: 0.8rem; border-radius: 20px;">
+            ✦ Blog de Tecnología
+        </span>
+        <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -1px; line-height: 1.1;">
+            Ideas, código<br>y tecnología.
+        </h1>
+        <p class="fs-5 mb-4" style="color: #94a3b8; max-width: 500px;">
+            Un espacio para compartir artículos, experiencias y novedades del mundo tech.
+        </p>
+        <div class="d-flex gap-3">
+            <a href="{% url 'lista' %}" class="btn btn-light fw-semibold px-4">Ver publicaciones</a>
+            {% if not user.is_authenticated %}
+            <a href="{% url 'registro' %}" class="btn btn-outline-light px-4">Unirme</a>
+            {% else %}
+            <a href="{% url 'crear' %}" class="btn btn-outline-light px-4">Escribir</a>
+            {% endif %}
+        </div>
     </div>
 </div>
 
-<div class="row mt-4">
+<!-- Cards de características -->
+<div class="row g-4 mb-5">
     <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-pencil-square fs-1 text-primary"></i>
-                <h5 class="card-title mt-3">Publicá tus ideas</h5>
-                <p class="card-text">Compartí artículos y novedades con la comunidad.</p>
+        <div class="card h-100 border-0 shadow-sm p-2">
+            <div class="card-body">
+                <div class="rounded-3 d-inline-flex p-3 mb-3" style="background-color: #eff6ff;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#2563eb" viewBox="0 0 16 16">
+                        <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                        <path d="M6.5 4a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6zm-3.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6zm-3 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6z"/>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">Publicaciones</h5>
+                <p class="text-muted">Leé artículos sobre programación, desarrollo web y tecnología.</p>
+                <a href="{% url 'lista' %}" class="btn btn-sm btn-outline-primary">Ver todas</a>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-search fs-1 text-success"></i>
-                <h5 class="card-title mt-3">Buscá contenido</h5>
-                <p class="card-text">Encontrá publicaciones por título fácilmente.</p>
+        <div class="card h-100 border-0 shadow-sm p-2">
+            <div class="card-body">
+                <div class="rounded-3 d-inline-flex p-3 mb-3" style="background-color: #f0fdf4;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#16a34a" viewBox="0 0 16 16">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">Comunidad</h5>
+                <p class="text-muted">Registrate, creá tu perfil y conectate con otros usuarios.</p>
+                <a href="{% url 'registro' %}" class="btn btn-sm btn-outline-success">Unirme</a>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-people fs-1 text-warning"></i>
-                <h5 class="card-title mt-3">Comunidad</h5>
-                <p class="card-text">Conectate con otros usuarios y enviá mensajes.</p>
+        <div class="card h-100 border-0 shadow-sm p-2">
+            <div class="card-body">
+                <div class="rounded-3 d-inline-flex p-3 mb-3" style="background-color: #fefce8;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ca8a04" viewBox="0 0 16 16">
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.758 2.855L15 11.114v-5.73zm-.034 6.878L9.271 8.82 8 9.583 6.728 8.82l-5.694 3.44A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.739zM1 11.114l4.758-2.876L1 5.383v5.73z"/>
+                    </svg>
+                </div>
+                <h5 class="fw-bold">Mensajes</h5>
+                <p class="text-muted">Enviá mensajes privados a otros usuarios de la plataforma.</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'bandeja_entrada' %}" class="btn btn-sm btn-outline-warning">Ver mensajes</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-sm btn-outline-warning">Iniciar sesión</a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

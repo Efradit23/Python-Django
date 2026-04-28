@@ -1,33 +1,35 @@
 {% extends "blog/base.html" %}
+{% load widget_tweaks %}
 
 {% block contenido %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
+    <div class="col-md-5">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-5">
-                <h2 class="fw-bold text-center mb-4"><i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión</h2>
+                <h2 class="fw-bold text-center mb-1">Bienvenido</h2>
+                <p class="text-muted text-center mb-4">Iniciá sesión para continuar</p>
+                {% if formulario.errors %}
+                <div class="alert alert-danger">
+                    Usuario o contraseña incorrectos. Intentá de nuevo.
+                </div>
+                {% endif %}
                 <form method="post">
                     {% csrf_token %}
-                    {% if formulario.errors %}
-                    <div class="alert alert-danger">
-                         <i class="bi bi-exclamation-triangle me-2"></i>Usuario o contraseña incorrectos. Intentá de nuevo.
-                    </div>
-                    {% endif %}
                     {% for campo in formulario %}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo }}
+                        {{ campo|add_class:"form-control" }}
                         {% if campo.errors %}
-                        <div class="text-danger small">{{ campo.errors }}</div>
+                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
                         {% endif %}
                     </div>
                     {% endfor %}
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Ingresar</button>
+                        <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
                     </div>
                 </form>
                 <hr>
-                <p class="text-center mb-0">¿No tenés cuenta? <a href="{% url 'registro' %}">Registrate</a></p>
+                <p class="text-center mb-0 text-muted">¿No tenés cuenta? <a href="{% url 'registro' %}">Registrate</a></p>
             </div>
         </div>
     </div>
