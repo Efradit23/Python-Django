@@ -4,4 +4,4 @@ from .models import Publicacion
 class PublicacionFormulario(forms.ModelForm):
     class Meta:
         model = Publicacion
-        fields = ['titulo', 'contenido', 'autor']
+        fields = ['titulo', 'resumen', 'contenido', 'autor', 'imagen']

@@ -4,11 +4,11 @@
 <h2>Crear publicación</h2>
 
 <div class="card">
-<form method="post">
-    {% csrf_token %}
-    {{ formulario.as_p }}
-    <button type="submit">Guardar</button>
-</form>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ formulario.as_p }}
+        <button type="submit">Guardar</button>
+    </form>
 </div>
 
 {% endblock %}
