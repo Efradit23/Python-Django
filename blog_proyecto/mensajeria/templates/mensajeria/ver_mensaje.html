@@ -1,0 +1,38 @@
+{% extends "blog/base.html" %}
+
+{% block contenido %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3"><i class="bi bi-envelope me-2"></i>Mensajes</h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'bandeja_entrada' %}"><i class="bi bi-inbox me-2"></i>Bandeja de entrada</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'mensajes_enviados' %}"><i class="bi bi-send me-2"></i>Enviados</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'enviar_mensaje' %}"><i class="bi bi-pencil-square me-2"></i>Nuevo mensaje</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5">
+                <h2 class="fw-bold mb-2">{{ mensaje.asunto }}</h2>
+                <p class="text-muted mb-1"><i class="bi bi-person me-1"></i><strong>De:</strong> {{ mensaje.remitente.username }}</p>
+                <p class="text-muted mb-1"><i class="bi bi-person-check me-1"></i><strong>Para:</strong> {{ mensaje.destinatario.username }}</p>
+                <p class="text-muted mb-4"><i class="bi bi-calendar me-1"></i>{{ mensaje.fecha|date:"d/m/Y H:i" }}</p>
+                <hr>
+                <div class="fs-5 mt-4">
+                    {{ mensaje.contenido }}
+                </div>
+                <hr class="mt-5">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'bandeja_entrada' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+                    <a href="{% url 'enviar_mensaje' %}" class="btn btn-primary"><i class="bi bi-reply me-1"></i>Responder</a>
+                    <a href="{% url 'eliminar_mensaje' mensaje.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

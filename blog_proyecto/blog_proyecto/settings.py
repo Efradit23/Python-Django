@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_ckeditor_5',
     'blog',
+    'cuentas',
+    'mensajeria',
 ]
 
 MIDDLEWARE = [
@@ -95,5 +97,9 @@ CKEDITOR_5_CONFIGS = {
             'link', 'blockQuote', '|',
             'undo', 'redo'
         ],
+        'width': '100%',
+        'editorConfig': {
+            'height': 400,
+        }
     }
 }

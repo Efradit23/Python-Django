@@ -1,20 +1,42 @@
 {% extends "blog/base.html" %}
 
 {% block contenido %}
-<h2>Buscar publicación</h2>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold mb-4"><i class="bi bi-search me-2"></i>Buscar publicaciones</h2>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="get">
+                    <div class="input-group input-group-lg">
+                        <input type="text" name="titulo" class="form-control" placeholder="Escribí el título a buscar..." value="{{ consulta }}">
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-search me-1"></i>Buscar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-<div class="card">
-<form method="get">
-    <input type="text" name="titulo" placeholder="Buscar...">
-    <button type="submit">Buscar</button>
-</form>
+        {% if consulta %}
+            {% if resultados %}
+                <p class="text-muted mb-3">Se encontraron <strong>{{ resultados|length }}</strong> resultado(s) para "<strong>{{ consulta }}</strong>"</p>
+                {% for r in resultados %}
+                <div class="card border-0 shadow-sm mb-3">
+                    {% if r.imagen %}
+                    <img src="{{ r.imagen.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="fw-bold">{{ r.titulo }}</h5>
+                        <p class="text-muted">{{ r.resumen }}</p>
+                        <p class="text-muted small"><i class="bi bi-person me-1"></i>{{ r.autor }} · <i class="bi bi-calendar me-1"></i>{{ r.fecha|date:"d/m/Y" }}</p>
+                        <a href="{% url 'detalle' r.pk %}" class="btn btn-outline-primary btn-sm">Leer más</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-exclamation-circle me-2"></i>No se encontraron publicaciones para "<strong>{{ consulta }}</strong>".
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
 </div>
-
-{% for r in resultados %}
-<div class="card">
-    <h3>{{ r.titulo }}</h3>
-    <p>{{ r.contenido }}</p>
-</div>
-{% endfor %}
-
 {% endblock %}
