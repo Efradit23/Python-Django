@@ -1,52 +1,318 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block contenido %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold"><i class="bi bi-journals me-2"></i>Publicaciones</h2>
-    {% if user.is_authenticated %}
-    <a href="{% url 'crear' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Nueva publicación</a>
-    {% endif %}
-</div>
+<style>
+    :root {
+        --bg-deep: #020617; 
+        --accent-line: rgba(34, 211, 238, 0.12);
+        --accent-bright: #22d3ee;
+        --glass-panel: rgba(15, 23, 42, 0.85);
+        --font-main: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+    }
 
-<form method="get" class="mb-4">
-    <div class="input-group">
-        <input type="text" name="consulta" class="form-control" placeholder="Buscar por título..." value="{{ consulta }}">
-        <button class="btn btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
-    </div>
-</form>
+    /* FONDO BLUEPRINT ULTRA */
+    .blueprint-bg {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: 
+            radial-gradient(circle at 50% 50%, transparent 20%, var(--bg-deep) 85%),
+            linear-gradient(var(--accent-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--accent-line) 1px, transparent 1px);
+        background-size: 100% 100%, 60px 60px, 60px 60px;
+        z-index: -1;
+        opacity: 0.7;
+        pointer-events: none;
+    }
 
-{% if publicaciones %}
-    <div class="row">
+    .blueprint-container {
+        position: relative;
+        padding-top: 50px;
+        padding-bottom: 100px;
+    }
+
+    /* HEADER */
+    .main-header { margin-bottom: 60px; }
+
+    .page-number {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent-bright);
+        letter-spacing: 4px;
+        display: block;
+        margin-bottom: 15px;
+    }
+
+    .hero-title {
+        font-family: var(--font-main);
+        font-weight: 800;
+        font-size: clamp(3rem, 7vw, 5.5rem);
+        line-height: 0.85;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: -3px;
+    }
+
+    /* SEARCH QUERY */
+    .search-wrapper {
+        margin-top: 45px;
+        max-width: 600px;
+        background: #fff;
+        padding: 4px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1), 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .search-wrapper::before {
+        content: "QUERY_INPUT";
+        position: absolute;
+        top: -22px; left: 10px;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--accent-bright);
+        letter-spacing: 2px;
+    }
+
+    .search-icon-box {
+        padding: 0 15px;
+        color: #000;
+        font-size: 1.2rem;
+        border-right: 1px solid #eee;
+    }
+
+    .search-wrapper input {
+        background: transparent !important;
+        border: none !important;
+        color: #000 !important;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        padding: 12px 15px !important;
+        box-shadow: none !important;
+        width: 100%;
+        font-size: 0.9rem;
+    }
+
+    .btn-search-exec {
+        background: #000;
+        color: #fff;
+        border: none;
+        padding: 10px 25px;
+        font-family: var(--font-main);
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 8px;
+        text-transform: uppercase;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-search-exec:hover {
+        background: var(--accent-bright);
+        color: #000;
+    }
+
+    /* LISTADO DE PUBLICACIONES */
+    .post-row { display: flex; flex-direction: column; gap: 35px; }
+
+    .post-strip {
+        display: grid;
+        grid-template-columns: 100px 1fr 400px;
+        background: var(--glass-panel);
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow: hidden;
+        backdrop-filter: blur(12px);
+        border-radius: 4px;
+    }
+
+    @media (max-width: 1200px) {
+        .post-strip { grid-template-columns: 100px 1fr 300px; }
+    }
+
+    @media (max-width: 992px) {
+        .post-strip { grid-template-columns: 1fr; }
+        .strip-image-wrap { height: 280px; order: -1; border-left: none; }
+    }
+
+    .post-strip:hover {
+        border-color: var(--accent-bright);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    /* FECHA */
+    .strip-date {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-right: 1px solid rgba(255,255,255,0.08);
+        font-family: var(--font-mono);
+        color: var(--accent-bright);
+        background: rgba(34, 211, 238, 0.02);
+    }
+
+    .strip-date .day { font-size: 1.8rem; font-weight: 800; }
+
+    /* CONTENIDO */
+    .strip-content { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+
+    .meta-data {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: #555;
+        margin-bottom: 15px;
+    }
+
+    .strip-title {
+        font-family: var(--font-main);
+        font-weight: 700;
+        font-size: 2.2rem;
+        color: #fff;
+        margin-bottom: 15px;
+        line-height: 1;
+    }
+
+    .strip-text { color: #999; font-size: 0.95rem; line-height: 1.6; }
+
+    /* IMAGEN */
+    .strip-image-wrap {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-left: 1px solid rgba(255,255,255,0.08);
+        background: #000;
+    }
+
+    .strip-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+        filter: grayscale(0.4);
+        transition: 0.8s ease;
+        object-position: center;
+    }
+
+    .post-strip:hover .strip-image {
+        opacity: 1;
+        filter: grayscale(0);
+        transform: scale(1.03);
+    }
+
+    /* ACCIONES - CORRECCIÓN DE HOVER AMARILLO */
+    .action-overlay { margin-top: 30px; display: flex; gap: 10px; }
+
+    .btn-blueprint {
+        background: rgba(255,255,255,0.03);
+        color: #ccc;
+        border: 1px solid rgba(255,255,255,0.1);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+        padding: 10px 20px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .btn-blueprint:hover { background: #fff; color: #000 !important; border-color: #fff; }
+
+    /* Estilo específico para Editar */
+    .btn-edit-warning:hover { 
+        background: #fbbf24 !important; /* Amarillo "Amber" */
+        border-color: #fbbf24 !important;
+        color: #000 !important;
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+    }
+
+    /* Estilo específico para Eliminar/Purgar */
+    .btn-danger-blue:hover { background: #ff5f56; border-color: #ff5f56; color: #fff !important; }
+
+    /* BTN SUPERIOR */
+    .btn-create-top {
+        background: var(--accent-bright);
+        color: #000 !important;
+        font-family: var(--font-mono);
+        font-weight: 800;
+        padding: 14px 28px;
+        font-size: 12px;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="blueprint-bg"></div>
+
+<div class="container blueprint-container">
+    
+    <header class="main-header">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <span class="page-number">CORE_RESOURCES // V1.0</span>
+                <h1 class="hero-title">Indexado de<br>Contenidos</h1>
+            </div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'crear' %}" class="btn-create-top d-none d-md-block">
+                + REGISTRAR_NUEVO
+            </a>
+            {% endif %}
+        </div>
+        
+        <form method="get" class="search-wrapper">
+            <div class="search-icon-box">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <input type="text" name="consulta" placeholder="Filtrar por parámetros de búsqueda..." value="{{ consulta }}">
+            <button type="submit" class="btn-search-exec">EJECUTAR_SCAN</button>
+        </form>
+    </header>
+
+    <div class="post-row">
         {% for p in publicaciones %}
-        <div class="col-md-6 mb-4">
-            <div class="card h-100 border-0 shadow-sm">
-                {% if p.imagen %}
-                <img src="{{ p.imagen.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">{{ p.titulo }}</h5>
-                    <p class="card-text text-muted">{{ p.resumen }}</p>
-                    <p class="card-text"><small class="text-muted"><i class="bi bi-person me-1"></i>{{ p.autor }} · <i class="bi bi-calendar me-1"></i>{{ p.fecha|date:"d/m/Y" }}</small></p>
+        <article class="post-strip">
+            <div class="strip-date">
+                <span class="day">{{ p.fecha|date:"d" }}</span>
+                <span class="month">{{ p.fecha|date:"M" }}</span>
+            </div>
+
+            <div class="strip-content">
+                <div class="meta-data">
+                    FILE_UID: {{ p.pk|stringformat:"04d" }} // CREATOR: {{ p.autor|upper }}
                 </div>
-                <div class="card-footer bg-white border-0 d-flex gap-2">
-                    <a href="{% url 'detalle' p.pk %}" class="btn btn-sm btn-outline-primary">Leer más</a>
+                
+                <h3 class="strip-title">{{ p.titulo }}</h3>
+                <p class="strip-text">{{ p.resumen|truncatechars:180 }}</p>
+                
+                <div class="action-overlay">
+                    <a href="{% url 'detalle' p.pk %}" class="btn-blueprint">Ver_Detalles</a>
                     {% if user.is_authenticated %}
-                    <a href="{% url 'editar' p.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
-                    <a href="{% url 'eliminar' p.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                    <a href="{% url 'editar' p.pk %}" class="btn-blueprint btn-edit-warning">Editar</a>
+                    <a href="{% url 'eliminar' p.pk %}" class="btn-blueprint btn-danger-blue">Purgar</a>
                     {% endif %}
                 </div>
             </div>
+
+            <div class="strip-image-wrap">
+                {% if p.imagen %}
+                    <img src="{{ p.imagen.url }}" class="strip-image" alt="Visual Log">
+                {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-muted font-monospace small">
+                        [ NO_VISUAL_DATA ]
+                    </div>
+                {% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <div class="text-center py-5" style="border: 1px dashed rgba(255,255,255,0.1);">
+            <p class="font-monospace text-muted mb-0">RESULTADO_NULO: La base de datos no arrojó coincidencias.</p>
         </div>
         {% endfor %}
     </div>
-{% else %}
-    <div class="alert alert-info text-center">
-        <i class="bi bi-info-circle me-2"></i>
-        {% if consulta %}
-            No se encontraron publicaciones para "<strong>{{ consulta }}</strong>".
-        {% else %}
-            No hay publicaciones aún.
-        {% endif %}
-    </div>
-{% endif %}
+
+</div>
+
 {% endblock %}

@@ -1,48 +1,342 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block contenido %}
-<div class="row">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body">
-                <h6 class="fw-bold mb-3"><i class="bi bi-envelope me-2"></i>Mensajes</h6>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link active" href="{% url 'bandeja_entrada' %}"><i class="bi bi-inbox me-2"></i>Bandeja de entrada</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'mensajes_enviados' %}"><i class="bi bi-send me-2"></i>Enviados</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'enviar_mensaje' %}"><i class="bi bi-pencil-square me-2"></i>Nuevo mensaje</a></li>
+<style>
+    /* VARIABLES DE DISEÑO (Matching con la Home) */
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --font-ui: 'Inter', sans-serif;
+        --mac-red: #ff5f56;
+        --mac-yellow: #ffbd2e;
+        --mac-green: #27c93f;
+        --terminal-bg: rgba(10, 15, 25, 0.98);
+        --accent-gradient: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+    }
+
+    /* CONTENEDOR TIPO VENTANA DE APPLE */
+    .apple-window {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 75vh;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(25px);
+        margin-bottom: 50px;
+    }
+
+    /* BARRA DE TÍTULO (TRAFFIC LIGHTS) */
+    .window-header {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 18px 25px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .traffic-lights {
+        display: flex;
+        gap: 10px;
+        width: 100px;
+    }
+
+    .dot { width: 13px; height: 13px; border-radius: 50%; }
+    .dot-red { background: var(--mac-red); }
+    .dot-yellow { background: var(--mac-yellow); }
+    .dot-green { background: var(--mac-green); }
+
+    .window-path {
+        flex-grow: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        opacity: 0.6;
+        letter-spacing: 1px;
+    }
+
+    /* ESTRUCTURA INTERNA */
+    .window-body {
+        display: flex;
+        flex: 1;
+    }
+
+    /* SIDEBAR (EXPLORER STYLE) */
+    .sidebar-explorer {
+        width: 260px;
+        background: rgba(0, 0, 0, 0.15);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 35px 15px;
+    }
+
+    .nav-label {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        color: var(--accent-cyan);
+        letter-spacing: 2px;
+        margin-bottom: 20px;
+        display: block;
+        padding-left: 15px;
+    }
+
+    .nav-msg .nav-link {
+        font-family: var(--font-ui);
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        padding: 12px 18px;
+        border-radius: 10px;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .nav-msg .nav-link:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        transform: translateX(3px);
+    }
+
+    .nav-msg .nav-link.active {
+        background: rgba(34, 211, 238, 0.1);
+        color: var(--accent-cyan);
+        box-shadow: inset 0 0 15px rgba(34, 211, 238, 0.05);
+    }
+
+    /* ÁREA PRINCIPAL */
+    .content-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 40px;
+    }
+
+    /* HEADER DE CONTENIDO CON DEGRADÉ */
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end; /* Alineación mejorada */
+        margin-bottom: 45px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        padding-bottom: 25px;
+    }
+
+    .section-title {
+        font-family: var(--font-header);
+        font-weight: 800;
+        font-size: 2.8rem;
+        letter-spacing: -1.5px;
+        margin: 0;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* BOTÓN NUEVO MENSAJE (MEJORADO) */
+    .btn-new-msg {
+        background: var(--accent-cyan);
+        color: #000000 !important;
+        font-family: var(--font-header);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 14px;
+        padding: 16px 30px; /* Más robusto */
+        font-size: 0.95rem;
+        border: none;
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        line-height: 1;
+        box-shadow: 0 10px 25px rgba(34, 211, 238, 0.2);
+    }
+
+    .btn-new-msg:hover {
+        background: #ffffff;
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(34, 211, 238, 0.4);
+    }
+
+    /* MENSAJES LISTA */
+    .msg-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
+        padding: 20px 25px;
+        margin-bottom: 12px;
+        transition: 0.3s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .msg-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(34, 211, 238, 0.3);
+        transform: scale(1.005);
+    }
+
+    .unread-glow {
+        width: 10px;
+        height: 10px;
+        background: var(--accent-cyan);
+        border-radius: 50%;
+        box-shadow: 0 0 12px var(--accent-cyan);
+        margin-right: 20px;
+    }
+
+    .msg-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .msg-sender {
+        font-family: var(--font-header);
+        font-weight: 700;
+        color: #ffffff;
+        font-size: 1.15rem;
+        margin-bottom: 4px;
+    }
+
+    .msg-subject {
+        font-family: var(--font-ui);
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        opacity: 0.8;
+    }
+
+    .msg-meta {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .msg-date {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--accent-purple);
+        opacity: 0.7;
+    }
+
+    .btn-terminal-sm {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 8px;
+        padding: 8px 18px;
+        transition: 0.2s;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 80px 0;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--accent-cyan);
+        opacity: 0.3;
+        margin-bottom: 25px;
+        display: block;
+    }
+</style>
+
+<div class="container py-5 terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="window-path">
+                ~ / home / inbox.sh
+            </div>
+            <div style="width: 100px;"></div> </div>
+
+        <div class="window-body">
+            <div class="sidebar-explorer d-none d-md-block">
+                <span class="nav-label">Directorio</span>
+                <ul class="nav flex-column nav-msg">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'bandeja_entrada' %}">
+                            <i class="bi bi-folder2-open"></i> Bandeja
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'mensajes_enviados' %}">
+                            <i class="bi bi-send-fill"></i> Enviados
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'enviar_mensaje' %}">
+                            <i class="bi bi-pencil-square"></i> Redactar
+                        </a>
+                    </li>
                 </ul>
             </div>
-        </div>
-    </div>
-    <div class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold"><i class="bi bi-inbox me-2"></i>Bandeja de entrada</h2>
-            <a href="{% url 'enviar_mensaje' %}" class="btn btn-primary"><i class="bi bi-pencil-square me-1"></i>Nuevo mensaje</a>
-        </div>
-        {% if mensajes_recibidos %}
-            {% for mensaje in mensajes_recibidos %}
-            <div class="card border-0 shadow-sm mb-2 {% if not mensaje.leido %}border-start border-primary border-3{% endif %}">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            {% if not mensaje.leido %}<span class="badge bg-primary me-2">Nuevo</span>{% endif %}
-                            <strong>{{ mensaje.remitente.username }}</strong>
-                            <span class="text-muted ms-2">{{ mensaje.asunto }}</span>
-                        </div>
-                        <div class="d-flex gap-2 align-items-center">
-                            <small class="text-muted">{{ mensaje.fecha|date:"d/m/Y H:i" }}</small>
-                            <a href="{% url 'ver_mensaje' mensaje.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
-                            <a href="{% url 'eliminar_mensaje' mensaje.pk %}" class="btn btn-sm btn-outline-danger">Eliminar</a>
-                        </div>
+
+            <div class="content-area">
+                <div class="content-header">
+                    <div>
+                        <h2 class="section-title">Bandeja de entrada</h2>
+                        <p class="mb-0 mt-2" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-cyan); opacity: 0.6;">
+                            user@visible:~$ fetch --messages
+                        </p>
                     </div>
+                    <a href="{% url 'enviar_mensaje' %}" class="btn-new-msg">
+                        <i class="bi bi-plus-lg fs-5"></i> NUEVO MENSAJE
+                    </a>
+                </div>
+
+                <div class="msg-list-wrapper">
+                    {% if mensajes_recibidos %}
+                        {% for mensaje in mensajes_recibidos %}
+                        <div class="msg-item">
+                            <div class="d-flex align-items-center">
+                                {% if not mensaje.leido %}
+                                    <div class="unread-glow"></div>
+                                {% else %}
+                                    <div style="width: 30px;"></div> {% endif %}
+                                <div class="msg-info">
+                                    <span class="msg-sender">{{ mensaje.remitente.username }}</span>
+                                    <span class="msg-subject">{{ mensaje.asunto|truncatechars:50 }}</span>
+                                </div>
+                            </div>
+
+                            <div class="msg-meta">
+                                <span class="msg-date">{{ mensaje.fecha|date:"d/m/Y H:i" }}</span>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'ver_mensaje' mensaje.pk %}" class="btn btn-outline-info btn-terminal-sm">Abrir</a>
+                                    <a href="{% url 'eliminar_mensaje' mensaje.pk %}" class="btn btn-outline-danger btn-terminal-sm">Borrar</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="bi bi-envelope-x empty-icon"></i>
+                            <h4 style="font-family: var(--font-header); color: #ffffff;">BANDEJA VACÍA</h4>
+                            <p style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted);">
+                                No tenés mensajes en tu bandeja de entrada.
+                            </p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="alert alert-info text-center">
-                <i class="bi bi-inbox me-2"></i>No tenés mensajes en tu bandeja de entrada.
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

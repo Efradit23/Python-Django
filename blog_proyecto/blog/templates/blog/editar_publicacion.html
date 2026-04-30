@@ -1,29 +1,209 @@
 {% extends "blog/base.html" %}
 {% load widget_tweaks %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="fw-bold mb-1">Editar publicación</h2>
-                <p class="text-muted mb-4">Modificá los campos que necesites</p>
+<style>
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --edit-gold: #ffbd2e; /* El amarillo de macOS para edición */
+        --terminal-bg: rgba(13, 17, 23, 0.98);
+        --accent-cyan: #22d3ee;
+    }
+
+    .apple-window {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(255, 189, 46, 0.2); /* Borde sutilmente amarillento */
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 189, 46, 0.05);
+    }
+
+    /* BARRA SUPERIOR CON INDICADOR DE EDICIÓN */
+    .window-header {
+        background: rgba(255, 189, 46, 0.03);
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 189, 46, 0.1);
+    }
+
+    .traffic-lights { display: flex; gap: 8px; width: 80px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    
+    .window-path {
+        flex-grow: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--edit-gold);
+        letter-spacing: 1px;
+    }
+
+    /* LAYOUT DE EDICIÓN */
+    .editor-layout {
+        display: flex;
+        min-height: 500px;
+    }
+
+    /* MARGEN DE "DIFF" (Cambios) */
+    .diff-margin {
+        width: 50px;
+        background: rgba(255, 189, 46, 0.02);
+        border-right: 1px solid rgba(255, 189, 46, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 50px;
+        color: var(--edit-gold);
+        font-size: 14px;
+        opacity: 0.4;
+    }
+
+    .form-section {
+        flex: 1;
+        padding: 50px 70px;
+    }
+
+    .section-title {
+        font-family: var(--font-header);
+        font-weight: 800;
+        font-size: 3.2rem;
+        color: #fff;
+        margin-bottom: 5px;
+        letter-spacing: -2px;
+    }
+
+    /* CAMPOS DE FORMULARIO ESTILO PATCH */
+    .form-label {
+        font-family: var(--font-mono);
+        color: var(--edit-gold);
+        font-size: 12px;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .form-label::before { content: "patch_"; color: rgba(255,255,255,0.4); }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 189, 46, 0.1) !important;
+        border-radius: 4px !important;
+        color: #fff !important;
+        font-family: var(--font-mono) !important;
+        padding: 14px !important;
+    }
+
+    .form-control:focus {
+        border-color: var(--edit-gold) !important;
+        background: rgba(255, 189, 46, 0.02) !important;
+        box-shadow: 0 0 15px rgba(255, 189, 46, 0.1) !important;
+    }
+
+    /* BOTONES DE SISTEMA */
+    .btn-save {
+        background: var(--edit-gold);
+        color: #000 !important;
+        font-family: var(--font-header);
+        font-weight: 800;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 4px;
+        text-transform: uppercase;
+        transition: 0.3s;
+    }
+
+    .btn-save:hover {
+        background: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 189, 46, 0.3);
+    }
+
+    .btn-cancel {
+        font-family: var(--font-mono);
+        color: #5c6370;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    /* BARRA DE ESTADO INFERIOR */
+    .window-footer {
+        background: var(--edit-gold);
+        padding: 4px 20px;
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: #000;
+        font-weight: 700;
+    }
+</style>
+
+<div class="container py-5 terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot" style="background:#ff5f56"></div>
+                <div class="dot" style="background:#ffbd2e"></div>
+                <div class="dot" style="background:#27c93f"></div>
+            </div>
+            <div class="window-path">
+                MODO_EDICION // <span style="color: #fff">update_entry.sql</span>
+            </div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="editor-layout">
+            <div class="diff-margin d-none d-md-flex">
+                <i class="bi bi-plus-lg mb-2"></i>
+                <i class="bi bi-dash-lg mb-2"></i>
+                <i class="bi bi-pencil-fill mb-2"></i>
+                <div style="width: 1px; height: 100px; background: rgba(255,189,46,0.1); margin: 10px 0;"></div>
+                <span style="writing-mode: vertical-rl; text-orientation: mixed; margin-top: 10px;">REFACTOR</span>
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Editar publicación</h2>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: #5c6370; margin-bottom: 40px;">
+                    // Modificando registro ID: #{{ publicacion.pk|default:"PROD" }}
+                </p>
+
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    
                     {% for campo in formulario %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
+                    <div class="mb-4">
+                        <label class="form-label">{{ campo.label }}</label>
                         {{ campo|add_class:"form-control" }}
+                        
                         {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
+                        <div class="text-danger small mt-2" style="font-family: var(--font-mono);">
+                            <i class="bi bi-exclamation-triangle"></i> fault_detected: {{ campo.errors }}
+                        </div>
                         {% endif %}
                     </div>
                     {% endfor %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning">Guardar cambios</button>
-                        <a href="{% url 'lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+
+                    <div class="d-flex align-items-center gap-4 mt-5">
+                        <button type="submit" class="btn-save">
+                            <i class="bi bi-arrow-repeat me-2"></i> aplicar_parche
+                        </button>
+                        <a href="{% url 'lista' %}" class="btn-cancel">
+                            <i class="bi bi-x-circle"></i> abortar_cambios
+                        </a>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="window-footer">
+            <div><i class="bi bi-wrench-adjustable me-1"></i> Maintenance Mode</div>
+            <div class="d-flex gap-3">
+                <span>Buffer: Dirty</span>
+                <span class="d-none d-md-inline">Overwrite: ON</span>
             </div>
         </div>
     </div>

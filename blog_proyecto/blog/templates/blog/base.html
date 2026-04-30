@@ -1,70 +1,586 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" style="overflow-x: hidden;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Blog Tecnológico</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-<body class="bg-light d-flex flex-column min-vh-100"></body>
+    <title>Blog.Tech</title>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
-    <div class="container">
-        <a class="navbar-brand fw-bold fs-4" href="{% url 'inicio' %}">
-            <i class="bi bi-journal-text me-2 text-primary"></i>Blog Tecnológico
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --dark-bg:       #050a14;
+            --surface:       #0c1526;
+            --accent-cyan:   #22d3ee;
+            --accent-purple: #a855f7;
+            --text-primary:  #f0f4ff;
+            --text-muted:    rgba(180, 200, 240, 0.55);
+            --border-subtle: rgba(255,255,255,0.07);
+            --font-display:  'Syne', sans-serif;
+            --font-mono:     'JetBrains Mono', monospace;
+        }
+
+        /* ── BASE ── */
+        html, body {
+            overflow-x: hidden;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--dark-bg);
+            background-image:
+                radial-gradient(circle at 20% 35%, rgba(34,211,238,0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 65%, rgba(168,85,247,0.05) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            opacity: 0;
+        }
+
+        body.page-ready { opacity: 1; transition: opacity 0.35s ease; }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            background-color: rgba(5,10,20,0.75) !important;
+            border-bottom: 1px solid rgba(34,211,238,0.1);
+            padding: 0;
+            height: 64px;
+            z-index: 1050;
+        }
+
+        .navbar > .container-custom {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Logo */
+        .navbar-brand {
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -1px;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0;
+        }
+
+        .brand-icon {
+            width: 32px; height: 32px;
+            background: rgba(34,211,238,0.1);
+            border: 1px solid rgba(34,211,238,0.25);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        /* Nav links — pill activo */
+        .navbar-nav { gap: 2px; }
+
+        .nav-link {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted) !important;
+            padding: 7px 14px !important;
+            border-radius: 8px;
+            transition: color 0.2s ease, background 0.2s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary) !important;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .nav-link.active-page {
+            color: var(--accent-cyan) !important;
+            background: rgba(34,211,238,0.08);
+            border: 1px solid rgba(34,211,238,0.15);
+        }
+
+        /* Divisor vertical entre brand y links */
+        .nav-divider {
+            width: 1px;
+            height: 22px;
+            background: var(--border-subtle);
+            margin: 0 20px;
+            flex-shrink: 0;
+        }
+
+        /* Avatar */
+        .nav-avatar-wrapper {
+            width: 36px; height: 36px;
+            border-radius: 50%; overflow: hidden;
+            border: 2px solid rgba(34,211,238,0.3);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.25s;
+            flex-shrink: 0;
+        }
+
+        .nav-avatar-wrapper:hover { border-color: var(--accent-cyan); }
+        .nav-avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Dropdown */
+        .dropdown-menu {
+            background: rgba(12,21,38,0.97);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 8px;
+            margin-top: 10px !important;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            min-width: 180px;
+        }
+
+        .dropdown-item {
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-size: 0.85rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item i { opacity: 0.45; font-size: 0.95rem; }
+        .dropdown-item:hover { background: rgba(34,211,238,0.08); color: var(--accent-cyan); }
+        .dropdown-item:hover i { opacity: 0.9; }
+        .dropdown-item.text-danger:hover { background: rgba(239,68,68,0.08); color: #f87171 !important; }
+
+        /* Botón login/registro */
+        .btn-nav-login {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: var(--text-muted) !important;
+            text-decoration: none;
+            padding: 7px 14px;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-nav-login:hover {
+            color: var(--text-primary) !important;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .btn-tech-pill {
+            background: var(--accent-cyan);
+            color: var(--dark-bg) !important;
+            font-family: var(--font-display);
+            font-weight: 800;
+            border-radius: 50px;
+            padding: 8px 20px;
+            border: none;
+            font-size: 0.78rem;
+            letter-spacing: 0.8px;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            display: inline-block;
+        }
+
+        .btn-tech-pill:hover {
+            background: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(34,211,238,0.3);
+        }
+
+        /* ── MAIN ──
+           Por defecto sin padding — el inicio lo controla todo.
+           Las páginas interiores usan .inner-page para tener espacio. */
+        main {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100%;
+        }
+
+        main.inner-page {
+            padding-top: 52px !important;
+            padding-bottom: 80px !important;
+            max-width: 1200px;
+            margin: 0 auto !important;
+            padding-left: 24px !important;
+            padding-right: 24px !important;
+        }
+
+        /* ── ALERTAS ── */
+        .alert-tech {
+            background: var(--surface);
+            border: none;
+            border-left: 4px solid var(--accent-cyan);
+            color: var(--text-primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        /* ── FOOTER ── */
+        .footer-premium {
+            background: #030712;
+            border-top: 1px solid var(--border-subtle);
+            padding: 64px 0 32px;
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-premium::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 600px; height: 200px;
+            background: radial-gradient(ellipse, rgba(34,211,238,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .footer-brand {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .footer-tagline {
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            max-width: 220px;
+            line-height: 1.65;
+        }
+
+        .footer-heading {
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        .footer-link {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.87rem;
+            margin-bottom: 10px;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover { color: var(--text-primary); }
+
+        .footer-social {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            border: 1px solid var(--border-subtle);
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.25s;
+        }
+
+        .footer-social:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(34,211,238,0.07);
+        }
+
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(34,211,238,0.06);
+            border: 1px solid rgba(34,211,238,0.15);
+            border-radius: 100px;
+            padding: 5px 14px 5px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            margin-bottom: 18px;
+        }
+
+        .footer-badge-dot {
+            width: 5px; height: 5px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            animation: blink-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes blink-dot {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px var(--accent-cyan); }
+            50%       { opacity: 0.3; box-shadow: none; }
+        }
+
+        .footer-divider {
+            border: none;
+            border-top: 1px solid var(--border-subtle);
+            margin: 48px 0 24px;
+        }
+
+        .footer-copy {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+<!-- ══ NAVBAR ══ -->
+<nav class="navbar sticky-top">
+    <div class="container-custom" style="display:flex; align-items:center; height:100%; gap:0;">
+
+        <!-- Logo -->
+        <a class="navbar-brand" href="{% url 'inicio' %}">
+            <div class="brand-icon"><i class="bi bi-database-fill"></i></div>
+            Blog<span style="color:var(--accent-cyan);">.</span>Tech
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="menu">
-            <ul class="navbar-nav me-auto ms-4">
-                <li class="nav-item"><a class="nav-link" href="{% url 'inicio' %}"><i class="bi bi-house me-1"></i>Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'acerca_de' %}"><i class="bi bi-person me-1"></i>Acerca de</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'lista' %}"><i class="bi bi-journals me-1"></i>Publicaciones</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'buscar' %}"><i class="bi bi-search me-1"></i>Buscar</a></li>
-            </ul>
-            <ul class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'crear' %}"><i class="bi bi-plus-circle me-1"></i>Nueva publicación</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-1"></i>{{ user.username }}
+
+        <!-- Divisor -->
+        <div class="nav-divider d-none d-lg-block"></div>
+
+        <!-- Links centrales -->
+        <ul class="navbar-nav flex-row d-none d-lg-flex me-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'inicio' %}" data-url="{% url 'inicio' %}">
+                    Inicio
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'lista' %}" data-url="{% url 'lista' %}">
+                    Publicaciones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'acerca_de' %}" data-url="{% url 'acerca_de' %}">
+                    Acerca de
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'buscar' %}" data-url="{% url 'buscar' %}">
+                    <i class="bi bi-search" style="font-size:0.85rem;"></i>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Acciones derecha -->
+        <div class="d-flex align-items-center gap-2 ms-auto">
+            {% if user.is_authenticated %}
+                <!-- Mensajes -->
+                <a href="{% url 'bandeja_entrada' %}"
+                   class="nav-link position-relative"
+                   style="padding: 7px 10px !important;">
+                    <i class="bi bi-chat-dots" style="font-size:1rem;"></i>
+                    {% if tiene_mensajes_nuevos %}
+                        <span style="position:absolute; top:4px; right:6px;
+                                     width:8px; height:8px;
+                                     background:var(--accent-cyan); border-radius:50%;
+                                     border:2px solid var(--dark-bg);
+                                     box-shadow:0 0 8px var(--accent-cyan);"></span>
+                    {% endif %}
+                </a>
+
+                <!-- Avatar dropdown -->
+                <div class="dropdown">
+                    <a href="#" data-bs-toggle="dropdown"
+                       class="text-decoration-none d-flex align-items-center gap-2 ps-1">
+                        <div class="nav-avatar-wrapper">
+                            <img src="{{ user.perfil.imagen.url|default:'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                                 class="nav-avatar-img"
+                                 onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'">
+                        </div>
+                        <span class="d-none d-md-inline"
+                              style="font-family:var(--font-display); font-weight:700;
+                                     font-size:0.85rem; color:var(--text-primary);">
+                            {{ user.username }}
+                        </span>
+                        <i class="bi bi-chevron-down d-none d-md-inline"
+                           style="color:var(--text-muted); font-size:0.7rem;"></i>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="bi bi-person me-2"></i>Mi perfil</a></li>
-                        <li class="nav-item"><a class="dropdown-item" href="{% url 'bandeja_entrada' %}"><i class="bi bi-chat-dots me-2"></i>Mensajes</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Salir</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{% url 'perfil' %}">
+                            <i class="bi bi-person"></i>Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'bandeja_entrada' %}">
+                            <i class="bi bi-chat-dots"></i>Mensajes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'crear' %}">
+                            <i class="bi bi-pencil"></i>Escribir Post</a></li>
+                        <li><hr class="dropdown-divider" style="opacity:0.08; margin:6px 8px;"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                            <i class="bi bi-box-arrow-right"></i>Cerrar Sesión</a></li>
                     </ul>
-                </li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión</a></li>
-                <li class="nav-item"><a class="btn btn-primary btn-sm ms-2 mt-1" href="{% url 'registro' %}">Registrarse</a></li>
-                {% endif %}
+                </div>
+
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-nav-login d-none d-md-inline">LOGIN</a>
+                <a href="{% url 'registro' %}" class="btn-tech-pill">EMPEZAR</a>
+            {% endif %}
+
+            <!-- Toggler mobile -->
+            <button class="navbar-toggler border-0 shadow-none d-lg-none ms-2 p-0"
+                    type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                <i class="bi bi-list" style="color:var(--accent-cyan); font-size:1.5rem;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="collapse navbar-collapse d-lg-none" id="mobileMenu">
+        <div class="container-custom py-3" style="border-top:1px solid var(--border-subtle);">
+            <ul class="navbar-nav gap-1">
+                <li><a class="nav-link" href="{% url 'inicio' %}" data-url="{% url 'inicio' %}">Inicio</a></li>
+                <li><a class="nav-link" href="{% url 'lista' %}" data-url="{% url 'lista' %}">Publicaciones</a></li>
+                <li><a class="nav-link" href="{% url 'acerca_de' %}" data-url="{% url 'acerca_de' %}">Acerca de</a></li>
+                <li><a class="nav-link" href="{% url 'buscar' %}" data-url="{% url 'buscar' %}">Buscar</a></li>
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container my-4">
+<!-- ══ MAIN ══ -->
+<main class="flex-grow-1 {% block main_class %}inner-page{% endblock %}">
     {% if messages %}
         {% for mensaje in messages %}
-        <div class="alert alert-{{ mensaje.tags }} alert-dismissible fade show" role="alert">
+        <div class="alert alert-tech alert-dismissible fade show mb-4" role="alert">
             {{ mensaje }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
         </div>
         {% endfor %}
     {% endif %}
 
-    {% block contenido %}
-    {% endblock %}
-</div>
+    {% block contenido %}{% endblock %}
+</main>
 
-<footer class="text-center py-4 mt-auto" style="border-top: 1px solid #ebebeb; background-color: #fff;">
-    <p class="mb-0 text-muted" style="font-size: 0.85rem;">© 2026 Blog Tecnológico</p>
+<!-- ══ FOOTER ══ -->
+<footer class="footer-premium">
+    <div class="container-custom">
+        <div class="row g-5">
+
+            <div class="col-lg-4">
+                <div class="footer-badge">
+                    <span class="footer-badge-dot"></span>
+                    Activo
+                </div>
+                <div class="footer-brand">
+                    Blog<span style="color:var(--accent-cyan);">.</span>Tech
+                </div>
+                <p class="footer-tagline">
+                    Un espacio dedicado al desarrollo de software y análisis de datos aplicados a soluciones reales.
+                </p>
+                <div class="d-flex gap-2 mt-4">
+                    <a href="#" class="footer-social"><i class="bi bi-github"></i></a>
+                    <a href="#" class="footer-social"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="footer-social"><i class="bi bi-twitter-x"></i></a>
+                </div>
+            </div>
+
+            <div class="col-6 col-lg-2 offset-lg-2">
+                <p class="footer-heading">Explorar</p>
+                <a href="{% url 'inicio' %}" class="footer-link">Inicio</a>
+                <a href="{% url 'lista' %}" class="footer-link">Publicaciones</a>
+                <a href="{% url 'acerca_de' %}" class="footer-link">Acerca de</a>
+                <a href="{% url 'buscar' %}" class="footer-link">Buscar</a>
+            </div>
+
+            <div class="col-6 col-lg-2">
+                <p class="footer-heading">Cuenta</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'perfil' %}" class="footer-link">Mi Perfil</a>
+                    <a href="{% url 'crear' %}" class="footer-link">Escribir Post</a>
+                    <a href="{% url 'bandeja_entrada' %}" class="footer-link">Mensajes</a>
+                    <a href="{% url 'logout' %}" class="footer-link">Salir</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="footer-link">Iniciar Sesión</a>
+                    <a href="{% url 'registro' %}" class="footer-link">Registrarse</a>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-2">
+                <p class="footer-heading">Stack</p>
+                <span class="footer-link" style="pointer-events:none; cursor:default;">Python</span>
+                <span class="footer-link" style="pointer-events:none; cursor:default;">Django</span>
+                <span class="footer-link" style="pointer-events:none; cursor:default;">MySQL</span>
+                <span class="footer-link" style="pointer-events:none; cursor:default;">Bootstrap</span>
+            </div>
+
+        </div>
+
+        <hr class="footer-divider">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <p class="footer-copy mb-0">&copy; 2026 Blog.Tech — Argentina</p>
+            <p class="footer-copy mb-0">Hecho con Django + 🧉</p>
+        </div>
+    </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Fade-in al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+        requestAnimationFrame(() => document.body.classList.add('page-ready'));
+    });
+
+    // Fade-out al navegar
+    document.querySelectorAll('a[href]').forEach(link => {
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('#') || href.startsWith('javascript') || link.target === '_blank') return;
+        link.addEventListener('click', e => {
+            try {
+                const url = new URL(href, location.origin);
+                if (url.origin !== location.origin) return;
+            } catch { return; }
+            e.preventDefault();
+            document.body.style.transition = 'opacity 0.22s ease';
+            document.body.style.opacity = '0';
+            setTimeout(() => { location.href = href; }, 230);
+        });
+    });
+
+    // Link activo en navbar
+    const path = location.pathname;
+    document.querySelectorAll('.nav-link[data-url]').forEach(link => {
+        const u = link.getAttribute('data-url');
+        if (u === path || (u !== '/' && path.startsWith(u))) {
+            link.classList.add('active-page');
+        }
+    });
+</script>
+
 </body>
 </html>

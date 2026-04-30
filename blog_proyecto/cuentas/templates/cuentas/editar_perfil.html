@@ -2,42 +2,208 @@
 {% load widget_tweaks %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="fw-bold mb-1">Editar perfil</h2>
-                <p class="text-muted mb-4">Actualizá tu información personal</p>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <h6 class="text-uppercase text-muted fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">Datos personales</h6>
-                    {% for campo in form_usuario %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo|add_class:"form-control" }}
-                        {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <hr class="my-4">
-                    <h6 class="text-uppercase text-muted fw-semibold mb-3" style="font-size: 0.75rem; letter-spacing: 1px;">Perfil</h6>
-                    {% for campo in form_perfil %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo|add_class:"form-control" }}
-                        {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning">Guardar cambios</button>
-                        <a href="{% url 'perfil' %}" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </form>
+<style>
+    .form-wrapper {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .form-page-header {
+        margin-bottom: 32px;
+    }
+
+    .form-page-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(180,200,240,0.45);
+        text-decoration: none;
+        margin-bottom: 16px;
+        transition: color 0.2s;
+    }
+
+    .form-page-back:hover { color: #22d3ee; }
+
+    .form-page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: #f0f4ff;
+        margin-bottom: 4px;
+    }
+
+    .form-page-subtitle {
+        font-size: 0.9rem;
+        color: rgba(180,200,240,0.5);
+    }
+
+    .form-section-card {
+        background: rgba(12,21,38,0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 28px 32px;
+        margin-bottom: 16px;
+    }
+
+    .form-section-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #22d3ee;
+        opacity: 0.7;
+        margin-bottom: 24px;
+    }
+
+    .field-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(180,200,240,0.55);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control-dark,
+    .form-control-dark:focus {
+        background: rgba(5,10,20,0.5) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        color: #f0f4ff !important;
+        padding: 11px 16px !important;
+        font-size: 0.92rem !important;
+        transition: border-color 0.25s, box-shadow 0.25s !important;
+        box-shadow: none !important;
+        outline: none !important;
+        width: 100%;
+    }
+
+    .form-control-dark:focus {
+        border-color: rgba(34,211,238,0.35) !important;
+        box-shadow: 0 0 0 3px rgba(34,211,238,0.07) !important;
+    }
+
+    .form-control-dark::placeholder { color: rgba(180,200,240,0.2) !important; }
+
+    /* Textarea */
+    textarea.form-control-dark { resize: vertical; min-height: 90px; }
+
+    .field-error {
+        font-size: 0.78rem;
+        color: #fca5a5;
+        margin-top: 6px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 8px;
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #22d3ee;
+        color: #050a14;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 0.88rem;
+        padding: 11px 28px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+
+    .btn-save:hover {
+        background: white;
+        box-shadow: 0 0 24px rgba(34,211,238,0.3);
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: rgba(180,200,240,0.5);
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 11px 22px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+    .btn-cancel:hover {
+        border-color: rgba(255,255,255,0.15);
+        color: #f0f4ff;
+    }
+</style>
+
+<div class="form-wrapper">
+
+    <div class="form-page-header">
+        <a href="{% url 'perfil' %}" class="form-page-back">
+            <i class="bi bi-arrow-left"></i> Volver al perfil
+        </a>
+        <h1 class="form-page-title">Editar perfil</h1>
+        <p class="form-page-subtitle">Actualizá tu información personal</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Datos personales -->
+        <div class="form-section-card">
+            <p class="form-section-label">Datos personales</p>
+            <div class="row g-3">
+                {% for campo in form_usuario %}
+                <div class="col-md-6">
+                    <label class="field-label">{{ campo.label }}</label>
+                    {{ campo|add_class:"form-control-dark" }}
+                    {% if campo.errors %}
+                    <div class="field-error">{{ campo.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
         </div>
-    </div>
+
+        <!-- Perfil -->
+        <div class="form-section-card">
+            <p class="form-section-label">Perfil</p>
+            <div class="row g-3">
+                {% for campo in form_perfil %}
+                <div class="col-12">
+                    <label class="field-label">{{ campo.label }}</label>
+                    {{ campo|add_class:"form-control-dark" }}
+                    {% if campo.errors %}
+                    <div class="field-error">{{ campo.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-save">
+                <i class="bi bi-check-lg"></i> Guardar cambios
+            </button>
+            <a href="{% url 'perfil' %}" class="btn-cancel">Cancelar</a>
+        </div>
+
+    </form>
 </div>
 {% endblock %}

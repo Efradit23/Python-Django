@@ -1,43 +1,275 @@
 {% extends "blog/base.html" %}
-{% load widget_tweaks %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h2 class="fw-bold mb-4">Buscar publicaciones</h2>
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
-                <form method="get">
-                    <div class="input-group input-group-lg">
-                        <input type="text" name="titulo" class="form-control" placeholder="Escribí el título a buscar..." value="{{ consulta }}">
-                        <button class="btn btn-primary" type="submit">Buscar</button>
-                    </div>
-                </form>
+<style>
+    /* VARIABLES DE IDENTIDAD */
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --font-ui: 'Inter', sans-serif;
+        --mac-red: #ff5f56;
+        --mac-yellow: #ffbd2e;
+        --mac-green: #27c93f;
+        --terminal-bg: rgba(10, 15, 25, 0.98);
+        --accent-gradient: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+    }
+
+    /* VENTANA ESTILO APPLE */
+    .apple-window {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 70vh;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(25px);
+        margin-bottom: 50px;
+    }
+
+    /* BARRA SUPERIOR */
+    .window-header {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 18px 25px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .traffic-lights {
+        display: flex;
+        gap: 10px;
+        width: 100px;
+    }
+
+    .dot { width: 13px; height: 13px; border-radius: 50%; }
+    .dot-red { background: var(--mac-red); }
+    .dot-yellow { background: var(--mac-yellow); }
+    .dot-green { background: var(--mac-green); }
+
+    .window-path {
+        flex-grow: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        opacity: 0.6;
+        letter-spacing: 1px;
+    }
+
+    /* AREA DE BÚSQUEDA */
+    .search-section {
+        padding: 50px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .section-title {
+        font-family: var(--font-header);
+        font-weight: 800;
+        font-size: 2.8rem;
+        letter-spacing: -1.5px;
+        margin-bottom: 30px;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+    }
+
+    /* INPUT DE BÚSQUEDA TIPO SPOTLIGHT */
+    .search-wrapper {
+        position: relative;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .search-input {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        color: #ffffff !important;
+        font-family: var(--font-ui) !important;
+        padding: 20px 25px 20px 60px !important;
+        font-size: 1.2rem !important;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .search-input:focus {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--accent-cyan) !important;
+        box-shadow: 0 0 30px rgba(34, 211, 238, 0.15) !important;
+        outline: none;
+    }
+
+    .search-icon-fixed {
+        position: absolute;
+        left: 22px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.4rem;
+        color: var(--accent-cyan);
+        z-index: 10;
+    }
+
+    /* RESULTADOS */
+    .results-container {
+        padding: 40px;
+        max-width: 900px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .result-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 18px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: 0.3s;
+        display: flex;
+        flex-direction: row; /* Diseño horizontal para resultados */
+    }
+
+    .result-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--accent-cyan);
+        transform: scale(1.01);
+    }
+
+    .result-img {
+        width: 200px;
+        height: auto;
+        min-height: 150px;
+        object-fit: cover;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .result-body {
+        padding: 25px;
+        flex: 1;
+    }
+
+    .result-title {
+        font-family: var(--font-header);
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+
+    .result-text {
+        font-family: var(--font-ui);
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+        opacity: 0.8;
+    }
+
+    .result-meta {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--accent-cyan);
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .btn-read-more {
+        background: rgba(34, 211, 238, 0.1);
+        color: var(--accent-cyan) !important;
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        padding: 6px 15px;
+        border-radius: 8px;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .btn-read-more:hover {
+        background: var(--accent-cyan);
+        color: #000000 !important;
+    }
+
+    /* ESTADOS VACÍOS */
+    .search-alert {
+        background: rgba(255, 189, 46, 0.05);
+        border: 1px solid rgba(255, 189, 46, 0.2);
+        color: var(--mac-yellow);
+        border-radius: 12px;
+        padding: 20px;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container py-5 terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
             </div>
+            <div class="window-path">
+                ~ / home / search_engine.bin
+            </div>
+            <div style="width: 100px;"></div>
         </div>
 
-        {% if consulta %}
-            {% if resultados %}
-                <p class="text-muted mb-3">Se encontraron <strong>{{ resultados|length }}</strong> resultado(s) para "<strong>{{ consulta }}</strong>"</p>
-                {% for r in resultados %}
-                <div class="card border-0 shadow-sm mb-3">
-                    {% if r.imagen %}
-                    <img src="{{ r.imagen.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="fw-bold">{{ r.titulo }}</h5>
-                        <p class="text-muted">{{ r.resumen }}</p>
-                        <p class="text-muted small"><i class="bi bi-person me-1"></i>{{ r.autor }} · <i class="bi bi-calendar me-1"></i>{{ r.fecha|date:"d/m/Y" }}</p>
-                        <a href="{% url 'detalle' r.pk %}" class="btn btn-outline-primary btn-sm">Leer más</a>
+        <div class="search-section">
+            <h2 class="section-title">Buscar publicaciones</h2>
+            
+            <form method="get" class="search-wrapper">
+                <i class="bi bi-search search-icon-fixed"></i>
+                <input type="text" name="titulo" class="form-control search-input" 
+                       placeholder="Escribí el título a buscar..." value="{{ consulta }}">
+                <button type="submit" style="display: none;">Buscar</button> </form>
+        </div>
+
+        <div class="results-container">
+            {% if consulta %}
+                {% if resultados %}
+                    <p class="mb-4" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+                        <span style="color: var(--mac-green);">></span> Query ejecutada: 
+                        <span style="color: #ffffff;">{{ resultados|length }}</span> resultados para "{{ consulta }}"
+                    </p>
+
+                    {% for r in resultados %}
+                    <div class="result-card">
+                        {% if r.imagen %}
+                        <img src="{{ r.imagen.url }}" class="result-img">
+                        {% endif %}
+                        <div class="result-body">
+                            <h5 class="result-title">{{ r.titulo }}</h5>
+                            <p class="result-text">{{ r.resumen|truncatechars:120 }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="result-meta">
+                                    <span><i class="bi bi-person me-1"></i>{{ r.autor }}</span>
+                                    <span><i class="bi bi-calendar-event me-1"></i>{{ r.fecha|date:"d/m/Y" }}</span>
+                                </div>
+                                <a href="{% url 'detalle' r.pk %}" class="btn-read-more">Leer más</a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <div class="search-alert text-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        No se encontraron entradas coincidentes para: "{{ consulta }}"
+                    </div>
+                {% endif %}
             {% else %}
-                <div class="alert alert-warning text-center">
-                    No se encontraron publicaciones para "<strong>{{ consulta }}</strong>".
+                <div class="text-center py-5 opacity-50">
+                    <i class="bi bi-terminal fs-1 mb-3 d-block" style="color: var(--accent-cyan);"></i>
+                    <p style="font-family: var(--font-mono); font-size: 0.9rem;">Esperando parámetros de búsqueda...</p>
                 </div>
             {% endif %}
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

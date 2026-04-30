@@ -1,38 +1,261 @@
 {% extends "blog/base.html" %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    {% if perfil.avatar %}
-                    <img src="{{ perfil.avatar.url }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
-                    {% else %}
-                    <i class="bi bi-person-circle" style="font-size: 6rem; color: #6c757d;"></i>
-                    {% endif %}
-                    <h2 class="fw-bold mt-3">{{ request.user.username }}</h2>
-                    <p class="text-muted">{{ request.user.email }}</p>
-                </div>
-                <hr>
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <p><strong>Nombre:</strong> {{ request.user.first_name|default:"No especificado" }}</p>
-                        <p><strong>Apellido:</strong> {{ request.user.last_name|default:"No especificado" }}</p>
-                        <p><strong>Email:</strong> {{ request.user.email }}</p>
+<style>
+    .profile-wrapper {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    /* Header card con avatar */
+    .profile-header-card {
+        background: rgba(12,21,38,0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 24px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .profile-banner {
+        height: 100px;
+        background: linear-gradient(135deg,
+            rgba(34,211,238,0.15) 0%,
+            rgba(168,85,247,0.15) 50%,
+            rgba(59,130,246,0.1) 100%);
+        position: relative;
+    }
+
+    .profile-banner::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 20px,
+            rgba(255,255,255,0.01) 20px,
+            rgba(255,255,255,0.01) 21px
+        );
+    }
+
+    .profile-avatar-area {
+        padding: 0 32px 28px;
+        margin-top: -44px;
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 88px; height: 88px;
+        border-radius: 50%;
+        border: 3px solid #050a14;
+        object-fit: cover;
+        background: #0c1526;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+        box-shadow: 0 0 0 2px rgba(34,211,238,0.3);
+    }
+
+    .profile-avatar i {
+        font-size: 3.5rem;
+        color: rgba(180,200,240,0.3);
+    }
+
+    .profile-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        color: #f0f4ff;
+        margin: 12px 0 4px;
+    }
+
+    .profile-email {
+        font-size: 0.88rem;
+        color: rgba(180,200,240,0.5);
+        margin: 0;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn-profile-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34,211,238,0.1);
+        border: 1px solid rgba(34,211,238,0.25);
+        border-radius: 10px;
+        color: #22d3ee;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 9px 18px;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+    .btn-profile-primary:hover {
+        background: #22d3ee;
+        color: #050a14;
+        border-color: #22d3ee;
+    }
+
+    .btn-profile-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        color: rgba(180,200,240,0.6);
+        font-family: 'Syne', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 9px 18px;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+    .btn-profile-secondary:hover {
+        border-color: rgba(255,255,255,0.15);
+        color: #f0f4ff;
+    }
+
+    /* Info card */
+    .info-card {
+        background: rgba(12,21,38,0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 28px 32px;
+    }
+
+    .info-card-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #22d3ee;
+        opacity: 0.7;
+        margin-bottom: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: rgba(180,200,240,0.4);
+        text-transform: uppercase;
+    }
+
+    .info-value {
+        font-size: 0.92rem;
+        color: #f0f4ff;
+    }
+
+    .info-value.empty {
+        color: rgba(180,200,240,0.25);
+        font-style: italic;
+    }
+</style>
+
+<div class="profile-wrapper">
+
+    <!-- Header -->
+    <div class="profile-header-card">
+        <div class="profile-banner"></div>
+        <div class="profile-avatar-area">
+            <div class="profile-avatar">
+                {% if perfil.avatar %}
+                    <img src="{{ perfil.avatar.url }}"
+                         style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                    <i class="bi bi-person-fill"></i>
+                {% endif %}
+            </div>
+            <h1 class="profile-name">{{ request.user.username }}</h1>
+            <p class="profile-email">{{ request.user.email }}</p>
+
+            <div class="profile-actions">
+                <a href="{% url 'editar_perfil' %}" class="btn-profile-primary">
+                    <i class="bi bi-pencil"></i> Editar perfil
+                </a>
+                <a href="{% url 'cambiar_contrasena' %}" class="btn-profile-secondary">
+                    <i class="bi bi-shield-lock"></i> Contraseña
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="info-card">
+                <p class="info-card-title">Datos personales</p>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">Nombre</span>
+                        <span class="info-value {% if not request.user.first_name %}empty{% endif %}">
+                            {{ request.user.first_name|default:"No especificado" }}
+                        </span>
                     </div>
-                    <div class="col-md-6">
-                        <p><strong>Biografía:</strong> {{ perfil.biografia|default:"No especificada" }}</p>
-                        <p><strong>Fecha de nacimiento:</strong> {{ perfil.fecha_nacimiento|default:"No especificada" }}</p>
+                    <div class="info-item">
+                        <span class="info-label">Apellido</span>
+                        <span class="info-value {% if not request.user.last_name %}empty{% endif %}">
+                            {{ request.user.last_name|default:"No especificado" }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value">{{ request.user.email }}</span>
                     </div>
                 </div>
-                <hr>
-                <div class="d-flex gap-2 mt-3">
-                    <a href="{% url 'editar_perfil' %}" class="btn btn-warning"><i class="bi bi-pencil me-1"></i>Editar perfil</a>
-                    <a href="{% url 'cambiar_contrasena' %}" class="btn btn-outline-secondary"><i class="bi bi-key me-1"></i>Cambiar contraseña</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-card">
+                <p class="info-card-title">Perfil</p>
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="info-label">Biografía</span>
+                        <span class="info-value {% if not perfil.biografia %}empty{% endif %}">
+                            {{ perfil.biografia|default:"No especificada" }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Fecha de nacimiento</span>
+                        <span class="info-value {% if not perfil.fecha_nacimiento %}empty{% endif %}">
+                            {{ perfil.fecha_nacimiento|default:"No especificada" }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}

@@ -1,29 +1,233 @@
 {% extends "blog/base.html" %}
 {% load widget_tweaks %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="fw-bold mb-1">Nueva publicación</h2>
-                <p class="text-muted mb-4">Completá los campos para publicar</p>
+<style>
+    /* IDENTIDAD VISUAL PRO */
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --mac-red: #ff5f56;
+        --mac-yellow: #ffbd2e;
+        --mac-green: #27c93f;
+        --terminal-bg: rgba(13, 17, 23, 0.98);
+        --accent-gradient: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+    }
+
+    /* VENTANA APPLE CON PROFUNDIDAD */
+    .apple-window {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(25px);
+        margin-bottom: 50px;
+    }
+
+    /* BARRA SUPERIOR */
+    .window-header {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .traffic-lights {
+        display: flex;
+        gap: 8px;
+        width: 100px;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-red { background: var(--mac-red); }
+    .dot-yellow { background: var(--mac-yellow); }
+    .dot-green { background: var(--mac-green); }
+
+    .window-path {
+        flex-grow: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--accent-cyan);
+        opacity: 0.7;
+    }
+
+    /* CUERPO DEL EDITOR */
+    .editor-layout {
+        display: flex;
+        position: relative;
+    }
+
+    .line-numbers {
+        width: 50px;
+        padding-top: 50px;
+        background: rgba(0, 0, 0, 0.3);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(34, 211, 238, 0.2);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        text-align: right;
+        padding-right: 15px;
+        user-select: none;
+    }
+
+    .form-section {
+        flex: 1;
+        padding: 50px 60px;
+    }
+
+    .section-title {
+        font-family: var(--font-header);
+        font-weight: 800;
+        font-size: 3rem;
+        letter-spacing: -2px;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+
+    /* LABELS CON IDENTIDAD DE CÓDIGO */
+    .form-label {
+        font-family: var(--font-mono);
+        color: var(--accent-cyan);
+        font-size: 12px;
+        text-transform: lowercase;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .form-label::before { content: "input_"; color: #c678dd; }
+    .form-label::after { content: " :"; color: #ffffff; }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 6px !important;
+        color: #e0e0e0 !important;
+        font-family: var(--font-mono) !important;
+        padding: 14px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .form-control:focus {
+        background: rgba(34, 211, 238, 0.03) !important;
+        border-color: var(--accent-cyan) !important;
+        box-shadow: 0 0 20px rgba(34, 211, 238, 0.1) !important;
+    }
+
+    /* BOTONES */
+    .btn-publish {
+        background: #27c93f;
+        color: #000 !important;
+        font-family: var(--font-header);
+        font-weight: 800;
+        padding: 15px 30px;
+        border-radius: 6px;
+        border: none;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-publish:hover {
+        background: #ffffff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(39, 201, 63, 0.3);
+    }
+
+    .btn-cancel {
+        color: #5c6370;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        text-decoration: none;
+        padding: 15px;
+    }
+
+    /* STATUS BAR */
+    .window-footer {
+        background: var(--accent-cyan);
+        padding: 5px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: #000;
+        font-weight: 700;
+    }
+</style>
+
+<div class="container py-5 terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="window-path">
+                root / projects / editor / <span style="color: #fff">post_deploy.py</span>
+            </div>
+            <div style="width: 100px;"></div>
+        </div>
+
+        <div class="editor-layout">
+            <div class="line-numbers d-none d-md-block">
+                1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16
+            </div>
+
+            <div class="form-section">
+                <h2 class="section-title">Nueva Publicación</h2>
+                <p style="font-family: var(--font-mono); font-size: 13px; color: #5c6370; margin-bottom: 40px;">// Ejecutando script de redacción para el sistema...</p>
+
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    
                     {% for campo in formulario %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
+                    <div class="mb-4">
+                        <label class="form-label">{{ campo.label }}</label>
                         {{ campo|add_class:"form-control" }}
+                        
+                        {% if campo.help_text %}
+                        <div class="form-text text-muted small" style="font-family: var(--font-mono); opacity: 0.5;"># {{ campo.help_text }}</div>
+                        {% endif %}
+
                         {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
+                        <div class="text-danger small mt-2" style="font-family: var(--font-mono);">
+                            <i class="bi bi-bug"></i> Traceback: {{ campo.errors }}
+                        </div>
                         {% endif %}
                     </div>
                     {% endfor %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">Publicar</button>
-                        <a href="{% url 'lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+
+                    <div class="d-flex align-items-center gap-3 mt-5">
+                        <button type="submit" class="btn-publish">
+                            <i class="bi bi-terminal-fill"></i> guardar_cambios
+                        </button>
+                        <a href="{% url 'lista' %}" class="btn-cancel">
+                            <i class="bi bi-x-lg"></i> abortar_proceso
+                        </a>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="window-footer">
+            <div class="d-flex gap-4">
+                <span><i class="bi bi-git me-1"></i> main*</span>
+                <span><i class="bi bi-check2-circle me-1"></i> Prettier</span>
+            </div>
+            <div class="d-flex gap-4">
+                <span>UTF-8</span>
+                <span class="d-none d-md-inline">Estado: 200 OK</span>
             </div>
         </div>
     </div>

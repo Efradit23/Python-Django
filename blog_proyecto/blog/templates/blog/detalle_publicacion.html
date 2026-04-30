@@ -1,32 +1,212 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            {% if publicacion.imagen %}
-            <img src="{{ publicacion.imagen.url }}" class="card-img-top" style="height: 350px; object-fit: cover;">
-            {% endif %}
-            <div class="card-body p-5">
-                <h1 class="fw-bold mb-3">{{ publicacion.titulo }}</h1>
-                <p class="text-muted mb-4">
-                    <i class="bi bi-person me-1"></i>{{ publicacion.autor }}
-                    &nbsp;·&nbsp;
-                    <i class="bi bi-calendar me-1"></i>{{ publicacion.fecha|date:"d/m/Y" }}
-                </p>
-                <hr>
-                <div class="fs-5 mt-4">
+<style>
+    :root {
+        --neo-cyan: #22d3ee;
+        --neo-green: #4ade80;
+        --dark-void: #05070a;
+        --text-dim: #94a3b8;
+    }
+
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        max-width: 1300px !important;
+        width: 95% !important;
+        margin: 40px auto !important;
+    }
+
+    /* VENTANA CON BORDE DE NEÓN SÓLIDO */
+    .apple-window {
+        background: var(--dark-void);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2), 0 30px 60px rgba(0,0,0,0.8);
+    }
+
+    /* HEADER CON CONTRASTE ALTO */
+    .window-header {
+        background: #111827; /* Fondo sólido oscuro para que las letras resalten */
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .header-text {
+        color: var(--neo-cyan) !important; /* Color cian brillante para contraste */
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 2px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(0,0,0,0.2); }
+
+    /* SECCIÓN TÍTULO */
+    .title-section {
+        padding: 60px 80px 30px 80px;
+        background: linear-gradient(to bottom, rgba(34, 211, 238, 0.02), transparent);
+    }
+
+    .post-title {
+        font-family: var(--font-header) !important;
+        font-weight: 800 !important;
+        font-size: clamp(2.5rem, 6vw, 4rem) !important;
+        color: #ffffff !important;
+        line-height: 1.1 !important;
+        letter-spacing: -1px !important;
+        margin: 0 !important;
+        /* Efecto de glitch sutil en el color */
+        text-shadow: 2px 2px 0px rgba(34, 211, 238, 0.2);
+    }
+
+    /* LAYOUT */
+    .reader-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+    }
+
+    .main-content {
+        padding: 20px 80px 80px 80px !important;
+    }
+
+    /* TEXTO DE LA PUBLICACIÓN */
+    .post-text {
+        color: #e2e8f0 !important; /* Blanco grisáceo de alto contraste */
+        font-family: 'DM Sans', sans-serif !important;
+        font-size: 1.25rem !important;
+        line-height: 1.9 !important;
+        max-width: 850px;
+    }
+
+    .post-image {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 50px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        filter: brightness(0.9);
+    }
+
+    /* SIDEBAR TIPO "DEBUGGER" */
+    .tech-sidebar {
+        padding: 60px 40px;
+        background: rgba(0, 0, 0, 0.4);
+        border-left: 2px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .meta-item {
+        margin-bottom: 30px;
+        padding-left: 15px;
+        border-left: 2px solid var(--neo-green);
+    }
+
+    .meta-label {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--neo-green);
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+
+    .meta-value {
+        color: #fff;
+        font-size: 13px;
+        font-family: var(--font-mono);
+    }
+
+    /* BOTONES ACCIONABLES */
+    .btn-action {
+        width: 100%;
+        padding: 14px;
+        margin-bottom: 12px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        transition: 0.2s;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .btn-edit { background: var(--neo-cyan); color: #000 !important; }
+    .btn-edit:hover { background: #fff; box-shadow: 0 0 20px var(--neo-cyan); }
+
+    .btn-back { border: 1px solid #334155; color: #94a3b8; }
+    .btn-back:hover { border-color: #fff; color: #fff; }
+
+    .btn-delete { color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); }
+    .btn-delete:hover { background: #ef4444; color: #fff !important; }
+
+    @media (max-width: 992px) {
+        .reader-layout { grid-template-columns: 1fr; }
+        .main-content, .title-section { padding: 40px; }
+        .tech-sidebar { border-left: none; border-top: 2px solid rgba(255, 255, 255, 0.05); }
+    }
+</style>
+
+<div class="container-fluid terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="d-flex align-items-center">
+                <div class="dot" style="background:#ff5f56"></div>
+                <div class="dot" style="background:#ffbd2e"></div>
+                <div class="dot" style="background:#27c93f"></div>
+            </div>
+            <div class="ms-4 header-text">
+                TERMINAL_SESSION://{{ publicacion.pk }}
+            </div>
+            <div class="ms-auto header-text" style="opacity: 0.5;">
+                UTF-8
+            </div>
+        </div>
+
+        <section class="title-section">
+            <h1 class="post-title">{{ publicacion.titulo }}</h1>
+        </section>
+
+        <div class="reader-layout">
+            <main class="main-content">
+                {% if publicacion.imagen %}
+                <img src="{{ publicacion.imagen.url }}" class="post-image">
+                {% endif %}
+
+                <article class="post-text">
                     {{ publicacion.contenido|safe }}
+                </article>
+            </main>
+
+            <aside class="tech-sidebar">
+                <div class="meta-item">
+                    <span class="meta-label">AUTH_USER</span>
+                    <span class="meta-value">{{ publicacion.autor }}</span>
                 </div>
-                <hr class="mt-5">
-                <div class="d-flex gap-2">
-                    <a href="{% url 'lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Volver</a>
+                <div class="meta-item">
+                    <span class="meta-label">SYS_DATE</span>
+                    <span class="meta-value">{{ publicacion.fecha|date:"d/m/Y" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">HEX_CODE</span>
+                    <span class="meta-value">#{{ publicacion.pk }}DBF</span>
+                </div>
+
+                <div class="actions mt-5">
+                    <a href="{% url 'lista' %}" class="btn-action btn-back">_cd ..</a>
+                    
                     {% if user.is_authenticated %}
-                    <a href="{% url 'editar' publicacion.pk %}" class="btn btn-outline-warning"><i class="bi bi-pencil me-1"></i>Editar</a>
-                    <a href="{% url 'eliminar' publicacion.pk %}" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Eliminar</a>
+                    <a href="{% url 'editar' publicacion.pk %}" class="btn-action btn-edit">_edit_source</a>
+                    <a href="{% url 'eliminar' publicacion.pk %}" class="btn-action btn-delete">_delete_file</a>
                     {% endif %}
                 </div>
-            </div>
+            </aside>
         </div>
     </div>
 </div>

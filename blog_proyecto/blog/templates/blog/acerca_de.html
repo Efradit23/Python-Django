@@ -1,33 +1,171 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <i class="bi bi-person-circle" style="font-size: 5rem; color: #6c757d;"></i>
-                    <h2 class="mt-3 fw-bold">Acerca de mí</h2>
-                </div>
-                <hr>
-                <p class="fs-5">Hola! Soy Efra el creador de este blog tecnológico. Me gusta mucho la programación y el desarrollo web.</p>
-                <p class="fs-5">Este proyecto fue desarrollado con <strong>Python</strong> y <strong>Django</strong> como parte de mi formación en desarrollo web.</p>
-                <div class="row mt-4 text-center">
-                    <div class="col-md-4">
-                        <i class="bi bi-code-slash fs-2 text-primary"></i>
-                        <p class="mt-2"><strong>Python & Django</strong></p>
-                    </div>
-                    <div class="col-md-4">
-                        <i class="bi bi-database fs-2 text-success"></i>
-                        <p class="mt-2"><strong>SQLite</strong></p>
-                    </div>
-                    <div class="col-md-4">
-                        <i class="bi bi-bootstrap fs-2 text-warning"></i>
-                        <p class="mt-2"><strong>Bootstrap 5</strong></p>
-                    </div>
-                </div>
+<style>
+    :root {
+        --text-main: #cbd5e1;
+        --accent-cyan: #22d3ee;
+        --bg-void: #020408; 
+    }
+
+    /* FONDO*/
+    .about-viewport {
+        background-color: var(--bg-void);
+        /* Capa 1: Grano de película / Ruido sutil */
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3 ForeignObject%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        position: relative;
+        min-height: 100vh;
+        padding: 120px 0;
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /* Capa 2: La malla técnica */
+    .about-viewport::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-image: 
+            linear-gradient(rgba(34, 211, 238, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(34, 211, 238, 0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+        z-index: 1;
+    }
+
+    /* Capa 3: Orbes de luz */
+    .about-viewport::after {
+        content: "";
+        position: absolute;
+        top: -10%; right: -5%;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.07) 0%, transparent 70%);
+        border-radius: 50%;
+        z-index: 0;
+        filter: blur(80px);
+    }
+
+    .light-bottom {
+        position: absolute;
+        bottom: -10%; left: -5%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(34, 211, 238, 0.05) 0%, transparent 70%);
+        border-radius: 50%;
+        z-index: 0;
+        filter: blur(80px);
+    }
+
+    /* CONTENEDOR CENTRAL */
+    .about-content-wrapper {
+        max-width: 850px;
+        width: 90%;
+        position: relative;
+        z-index: 10; /* Por encima del fondo */
+    }
+
+    .about-header {
+        margin-bottom: 80px;
+    }
+
+    .about-label {
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--accent-cyan);
+        font-size: 12px;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 15px;
+        opacity: 0.8;
+    }
+
+    .about-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: clamp(3.5rem, 9vw, 5.5rem);
+        color: #fff;
+        line-height: 0.85;
+        margin: 0;
+        letter-spacing: -3px;
+    }
+
+    /* CUERPO DE TEXTO */
+    .about-body {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1.35rem;
+        line-height: 2.1; 
+        color: var(--text-main);
+    }
+
+    .about-body p {
+        margin-bottom: 45px;
+    }
+
+    .about-body strong {
+        color: #fff;
+        font-weight: 700;
+        position: relative;
+        white-space: nowrap;
+    }
+
+    .about-body strong::after {
+        content: "";
+        position: absolute;
+        bottom: 4px; left: 0;
+        width: 100%; height: 8px;
+        background: rgba(34, 211, 238, 0.15);
+        z-index: -1;
+    }
+
+    /* FOOTER */
+    .about-footer {
+        margin-top: 100px;
+        padding-top: 40px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stack-horizontal {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: var(--accent-cyan);
+        letter-spacing: 1px;
+    }
+
+    @media (max-width: 768px) {
+        .about-viewport { padding: 80px 0; }
+        .about-title { font-size: 3.5rem; }
+        .about-body { font-size: 1.2rem; }
+    }
+</style>
+
+<div class="about-viewport">
+    <div class="light-bottom"></div>
+
+    <div class="about-content-wrapper">
+        <header class="about-header">
+            <span class="about-label">DEVELOPER_PROFILE</span>
+            <h1 class="about-title">Acerca<br>de mí</h1>
+        </header>
+
+        <article class="about-body">
+            <p>
+                ¡Hola! Soy <strong>Efra</strong>, el creador y desarrollador detrás de este blog tecnológico. Este espacio nació como un desafío para aplicar conocimientos sólidos en el desarrollo de aplicaciones web robustas.
+            </p>
+            <p>
+                El objetivo de este proyecto es ofrecer una plataforma ágil y moderna donde se puedan compartir experiencias sobre código, herramientas y novedades del ecosistema tech.
+            </p>
+        </article>
+
+        <footer class="about-footer">
+            <div class="stack-horizontal">
+                <span>// PYTHON_DJANGO</span>
+                <span>// SQLITE_3</span>
+                <span>// BOOTSTRAP_5</span>
             </div>
-        </div>
+        </footer>
     </div>
 </div>
 {% endblock %}

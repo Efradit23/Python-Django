@@ -2,36 +2,207 @@
 {% load widget_tweaks %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="fw-bold text-center mb-1">Bienvenido</h2>
-                <p class="text-muted text-center mb-4">Iniciá sesión para continuar</p>
-                {% if formulario.errors %}
-                <div class="alert alert-danger">
-                    Usuario o contraseña incorrectos. Intentá de nuevo.
-                </div>
-                {% endif %}
-                <form method="post">
-                    {% csrf_token %}
-                    {% for campo in formulario %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo|add_class:"form-control" }}
-                        {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
-                    </div>
-                </form>
-                <hr>
-                <p class="text-center mb-0 text-muted">¿No tenés cuenta? <a href="{% url 'registro' %}">Registrate</a></p>
-            </div>
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 64px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 16px;
+        position: relative;
+    }
+
+    .auth-glow {
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background:
+            radial-gradient(ellipse 40% 40% at 50% 40%, rgba(34,211,238,0.07) 0%, transparent 70%),
+            radial-gradient(ellipse 30% 30% at 20% 70%, rgba(59,130,246,0.05) 0%, transparent 70%);
+    }
+
+    .auth-card {
+        position: relative; z-index: 2;
+        width: 100%; max-width: 440px;
+        background: rgba(12,21,38,0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 24px;
+        padding: 48px 40px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+
+    .auth-icon {
+        width: 56px; height: 56px;
+        background: rgba(34,211,238,0.1);
+        border: 1px solid rgba(34,211,238,0.25);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        color: #22d3ee;
+        margin-bottom: 24px;
+    }
+
+    .auth-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.9rem;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: #f0f4ff;
+        margin-bottom: 6px;
+    }
+
+    .auth-subtitle {
+        font-size: 0.9rem;
+        color: rgba(180,200,240,0.55);
+        margin-bottom: 36px;
+    }
+
+    .form-label-dark {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: rgba(180,200,240,0.6);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control-dark {
+        width: 100%;
+        background: rgba(5,10,20,0.6) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        color: #f0f4ff !important;
+        padding: 11px 16px !important;
+        font-size: 0.92rem !important;
+        transition: border-color 0.25s, box-shadow 0.25s !important;
+        outline: none !important;
+    }
+
+    .form-control-dark:focus {
+        border-color: rgba(34,211,238,0.4) !important;
+        box-shadow: 0 0 0 3px rgba(34,211,238,0.08) !important;
+        background: rgba(5,10,20,0.8) !important;
+    }
+
+    .form-control-dark::placeholder { color: rgba(180,200,240,0.25) !important; }
+
+    .btn-auth-primary {
+        width: 100%;
+        background: #22d3ee;
+        color: #050a14;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        padding: 13px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s;
+        margin-top: 8px;
+    }
+
+    .btn-auth-primary:hover {
+        background: white;
+        box-shadow: 0 0 30px rgba(34,211,238,0.3);
+        transform: translateY(-1px);
+    }
+
+    .auth-error {
+        background: rgba(239,68,68,0.08);
+        border: 1px solid rgba(239,68,68,0.2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        color: #fca5a5;
+        font-size: 0.85rem;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .auth-divider {
+        display: flex; align-items: center; gap: 12px;
+        margin: 28px 0;
+    }
+
+    .auth-divider-line {
+        flex: 1; height: 1px;
+        background: rgba(255,255,255,0.06);
+    }
+
+    .auth-divider-text {
+        font-size: 0.75rem;
+        color: rgba(180,200,240,0.3);
+    }
+
+    .auth-footer-text {
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(180,200,240,0.45);
+    }
+
+    .auth-footer-text a {
+        color: #22d3ee;
+        text-decoration: none;
+        font-weight: 600;
+        transition: opacity 0.2s;
+    }
+
+    .auth-footer-text a:hover { opacity: 0.75; }
+
+    .field-error {
+        font-size: 0.78rem;
+        color: #fca5a5;
+        margin-top: 6px;
+    }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-glow"></div>
+
+    <div class="auth-card">
+
+        <div class="auth-icon"><i class="bi bi-database-fill"></i></div>
+
+        <h1 class="auth-title">Bienvenido</h1>
+        <p class="auth-subtitle">Iniciá sesión para continuar</p>
+
+        {% if formulario.errors %}
+        <div class="auth-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Usuario o contraseña incorrectos. Intentá de nuevo.
         </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for campo in formulario %}
+            <div class="mb-4">
+                <label class="form-label-dark">{{ campo.label }}</label>
+                {{ campo|add_class:"form-control-dark" }}
+                {% if campo.errors %}
+                <div class="field-error">{{ campo.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-auth-primary">
+                Iniciar sesión →
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <div class="auth-divider-line"></div>
+            <span class="auth-divider-text">o</span>
+            <div class="auth-divider-line"></div>
+        </div>
+
+        <p class="auth-footer-text">
+            ¿No tenés cuenta? <a href="{% url 'registro' %}">Registrate gratis</a>
+        </p>
+
     </div>
 </div>
 {% endblock %}

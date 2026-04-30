@@ -2,30 +2,214 @@
 {% load widget_tweaks %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5">
-                <h2 class="fw-bold mb-1">Cambiar contraseña</h2>
-                <p class="text-muted mb-4">Ingresá tu contraseña actual y la nueva</p>
-                <form method="post">
-                    {% csrf_token %}
-                    {% for campo in formulario %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">{{ campo.label }}</label>
-                        {{ campo|add_class:"form-control" }}
-                        {% if campo.errors %}
-                        <div class="text-danger small mt-1">{{ campo.errors }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-warning">Cambiar contraseña</button>
-                        <a href="{% url 'perfil' %}" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </form>
-            </div>
+<style>
+    .form-wrapper {
+        max-width: 460px;
+        margin: 0 auto;
+    }
+
+    .form-page-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(180,200,240,0.45);
+        text-decoration: none;
+        margin-bottom: 20px;
+        transition: color 0.2s;
+    }
+
+    .form-page-back:hover { color: #fbbf24; }
+
+    .security-icon {
+        width: 56px; height: 56px;
+        background: rgba(251,191,36,0.08);
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        color: #fbbf24;
+        margin-bottom: 20px;
+    }
+
+    .form-page-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.9rem;
+        font-weight: 800;
+        letter-spacing: -1.5px;
+        color: #f0f4ff;
+        margin-bottom: 6px;
+    }
+
+    .form-page-subtitle {
+        font-size: 0.9rem;
+        color: rgba(180,200,240,0.5);
+        margin-bottom: 32px;
+    }
+
+    .form-section-card {
+        background: rgba(12,21,38,0.7);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 28px 32px;
+        margin-bottom: 16px;
+    }
+
+    /* Aviso de seguridad */
+    .security-notice {
+        background: rgba(251,191,36,0.06);
+        border: 1px solid rgba(251,191,36,0.15);
+        border-radius: 12px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .security-notice i {
+        color: #fbbf24;
+        font-size: 1rem;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+
+    .security-notice p {
+        font-size: 0.82rem;
+        color: rgba(251,191,36,0.7);
+        margin: 0;
+        line-height: 1.55;
+    }
+
+    .field-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: rgba(180,200,240,0.55);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control-dark,
+    .form-control-dark:focus {
+        background: rgba(5,10,20,0.5) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: 10px !important;
+        color: #f0f4ff !important;
+        padding: 11px 16px !important;
+        font-size: 0.92rem !important;
+        transition: border-color 0.25s, box-shadow 0.25s !important;
+        box-shadow: none !important;
+        outline: none !important;
+        width: 100%;
+    }
+
+    .form-control-dark:focus {
+        border-color: rgba(251,191,36,0.35) !important;
+        box-shadow: 0 0 0 3px rgba(251,191,36,0.06) !important;
+    }
+
+    .form-control-dark::placeholder { color: rgba(180,200,240,0.2) !important; }
+
+    .field-error {
+        font-size: 0.78rem;
+        color: #fca5a5;
+        margin-top: 6px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 8px;
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fbbf24;
+        color: #050a14;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 0.88rem;
+        padding: 11px 28px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+
+    .btn-save:hover {
+        background: white;
+        box-shadow: 0 0 24px rgba(251,191,36,0.3);
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: rgba(180,200,240,0.5);
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 11px 22px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.25s;
+    }
+
+    .btn-cancel:hover {
+        border-color: rgba(255,255,255,0.15);
+        color: #f0f4ff;
+    }
+</style>
+
+<div class="form-wrapper">
+
+    <a href="{% url 'perfil' %}" class="form-page-back">
+        <i class="bi bi-arrow-left"></i> Volver al perfil
+    </a>
+
+    <div class="security-icon"><i class="bi bi-shield-lock-fill"></i></div>
+
+    <h1 class="form-page-title">Cambiar contraseña</h1>
+    <p class="form-page-subtitle">Actualizá tus credenciales de acceso</p>
+
+    <div class="form-section-card">
+
+        <div class="security-notice">
+            <i class="bi bi-info-circle-fill"></i>
+            <p>Después de cambiar tu contraseña vas a tener que volver a iniciar sesión en todos tus dispositivos.</p>
         </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for campo in formulario %}
+            <div class="mb-4">
+                <label class="field-label">{{ campo.label }}</label>
+                {{ campo|add_class:"form-control-dark" }}
+                {% if campo.errors %}
+                <div class="field-error">{{ campo.errors }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="bi bi-shield-check"></i> Cambiar contraseña
+                </button>
+                <a href="{% url 'perfil' %}" class="btn-cancel">Cancelar</a>
+            </div>
+        </form>
+
     </div>
 </div>
 {% endblock %}

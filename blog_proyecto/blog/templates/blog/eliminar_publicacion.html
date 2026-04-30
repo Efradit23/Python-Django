@@ -1,21 +1,194 @@
 {% extends "blog/base.html" %}
+{% load static %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-5 text-center">
-                <i class="bi bi-trash text-danger" style="font-size: 4rem;"></i>
-                <h2 class="fw-bold mt-3">¿Eliminar publicación?</h2>
-                <p class="text-muted fs-5 mt-2">Estás por eliminar <strong>"{{ publicacion.titulo }}"</strong>. Esta acción no se puede deshacer.</p>
-                <hr>
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-flex gap-2 justify-content-center mt-4">
-                        <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Sí, eliminar</button>
-                        <a href="{% url 'lista' %}" class="btn btn-outline-secondary">Cancelar</a>
-                    </div>
-                </form>
+<style>
+    .terminal-container {
+        --font-header: 'Syne', sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --mac-red: #ff5f56;
+        --terminal-bg: rgba(13, 17, 23, 0.98);
+        --error-glow: rgba(255, 95, 86, 0.15);
+    }
+
+    /* VENTANA ESTILO CRITICAL ALERT */
+    .apple-window {
+        background: var(--terminal-bg);
+        border: 1px solid rgba(255, 95, 86, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 50px 100px rgba(0, 0, 0, 0.8), 0 0 30px var(--error-glow);
+        max-width: 650px;
+        margin: 40px auto;
+    }
+
+    /* BARRA SUPERIOR DE EMERGENCIA */
+    .window-header {
+        background: rgba(255, 95, 86, 0.05);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 95, 86, 0.2);
+    }
+
+    .traffic-lights { display: flex; gap: 8px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; opacity: 0.5; }
+
+    .window-title {
+        flex-grow: 1;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--mac-red);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+    }
+
+    /* CUERPO DE ADVERTENCIA */
+    .purge-body {
+        padding: 50px 40px;
+        text-align: center;
+        position: relative;
+    }
+
+    /* Efecto de fondo sutil de advertencia */
+    .purge-body::after {
+        content: "!";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 250px;
+        font-weight: 900;
+        color: rgba(255, 95, 86, 0.03);
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .warning-icon {
+        color: var(--mac-red);
+        font-size: 4.5rem;
+        margin-bottom: 25px;
+        filter: drop-shadow(0 0 15px rgba(255, 95, 86, 0.4));
+        z-index: 1;
+        position: relative;
+    }
+
+    .section-title {
+        font-family: var(--font-header);
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: #fff;
+        letter-spacing: -1px;
+        margin-bottom: 15px;
+        z-index: 1;
+        position: relative;
+    }
+
+    .warning-text {
+        font-family: var(--font-mono);
+        color: #adb5bd;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 35px;
+        z-index: 1;
+        position: relative;
+    }
+
+    .target-file {
+        color: var(--mac-red);
+        background: rgba(255, 95, 86, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(255, 95, 86, 0.2);
+    }
+
+    /* BOTONES DE PURGA */
+    .btn-purge {
+        background: var(--mac-red);
+        color: #fff !important;
+        font-family: var(--font-header);
+        font-weight: 800;
+        padding: 14px 35px;
+        border: none;
+        border-radius: 6px;
+        text-transform: uppercase;
+        transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1;
+        position: relative;
+    }
+
+    .btn-purge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px rgba(255, 95, 86, 0.5);
+        background: #ff7871;
+    }
+
+    .btn-safe {
+        font-family: var(--font-mono);
+        color: #5c6370;
+        text-decoration: none;
+        font-size: 13px;
+        padding: 14px 20px;
+        z-index: 1;
+        position: relative;
+    }
+
+    /* STATUS BAR INFERIOR */
+    .window-footer {
+        background: var(--mac-red);
+        padding: 6px 20px;
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: #000;
+        font-weight: 800;
+    }
+</style>
+
+<div class="container py-5 terminal-container">
+    <div class="apple-window">
+        
+        <div class="window-header">
+            <div class="traffic-lights">
+                <div class="dot" style="background:var(--mac-red); opacity: 1;"></div>
+                <div class="dot" style="background:#444"></div>
+                <div class="dot" style="background:#444"></div>
+            </div>
+            <div class="window-title">System::Purge_Command</div>
+        </div>
+
+        <div class="purge-body">
+            <i class="bi bi-exclamation-octagon warning-icon"></i>
+            
+            <h2 class="section-title">¿Eliminar publicación?</h2>
+            
+            <p class="warning-text">
+                ADVERTENCIA: Estás por ejecutar una purga irreversible sobre el objeto: <br>
+                <span class="target-file">"{{ publicacion.titulo }}"</span><br><br>
+                Esta acción eliminará todos los registros asociados de la base de datos de forma permanente.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex align-items-center justify-content-center gap-3">
+                    <button type="submit" class="btn-purge">
+                        <i class="bi bi-trash3-fill me-2"></i> confirmar_purga
+                    </button>
+                    <a href="{% url 'lista' %}" class="btn-safe">
+                        <i class="bi bi-shield-check me-1"></i> cancelar_operacion
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="window-footer">
+            <div><i class="bi bi-exclamation-triangle-fill me-1"></i> DANGER_ZONE</div>
+            <div class="d-flex gap-3">
+                <span>ROOT_ACCESS: REQUIRED</span>
+                <span class="d-none d-md-inline">UID: {{ publicacion.pk }}</span>
             </div>
         </div>
     </div>
